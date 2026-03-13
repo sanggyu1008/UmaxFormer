@@ -22,16 +22,13 @@ YEARS = range(1958, 2026)   # 1958 ~ 2025
 MONTHS = range(1, 13)
 DAYS = [f"{d:02d}" for d in range(1, 32)]
 
+# 결과를 항상 OUTDIR/ERA5_daily_YYYYMM.nc 형태로 저장
 OUTDIR = Path("/mnt/d/project/01_ENSO/01_data/01_raw/era5/daily")
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 MAX_RETRIES = 6
 RETRY_WAIT_SEC = 15
 REQUEST_GAP_SEC = 2
-
-# True  -> OUTDIR/YYYYMM/*.nc
-# False -> OUTDIR/*.nc
-USE_MONTH_SUBDIR = True
 
 
 # =========================
@@ -59,44 +56,67 @@ def detect_file_type(path: Path) -> str:
     return "unknown"
 
 
-def extract_zip_keep_only_nc(zip_path: Path, dest_dir: Path):
+def target_nc_path(yyyymm: str) -> Path:
+    return OUTDIR / f"ERA5_daily_{yyyymm}.nc"
+
+
+def expected_nc_exists(yyyymm: str) -> bool:
     """
-    zip 파일을 dest_dir에 압축해제하고 .nc만 남긴다.
-    zip은 마지막에 삭제.
+    해당 월의 기대 출력 파일이 이미 있는지 확인
     """
+    return target_nc_path(yyyymm).exists()
+
+
+def extract_zip_to_single_target(zip_path: Path, target: Path) -> Path:
+    """
+    zip 파일을 임시 디렉토리에 풀고,
+    내부의 .nc가 정확히 1개일 때 target 이름으로 저장한다.
+    """
+    tmp_extract_dir = OUTDIR / f".tmp_extract_{target.stem}"
+    tmp_extract_dir.mkdir(parents=True, exist_ok=True)
+
     extracted_nc = []
+    try:
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            for member in zf.infolist():
+                if member.is_dir():
+                    continue
 
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        for member in zf.infolist():
-            if member.is_dir():
-                continue
+                member_name = Path(member.filename).name
+                out_path = tmp_extract_dir / member_name
 
-            member_name = Path(member.filename).name
-            out_path = dest_dir / member_name
+                with zf.open(member) as src, open(out_path, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
 
-            with zf.open(member) as src, open(out_path, "wb") as dst:
-                shutil.copyfileobj(src, dst)
+                if out_path.suffix.lower() == ".nc":
+                    extracted_nc.append(out_path)
+                else:
+                    out_path.unlink(missing_ok=True)
 
-            if out_path.suffix.lower() == ".nc":
-                extracted_nc.append(out_path)
-            else:
-                out_path.unlink(missing_ok=True)
+        if len(extracted_nc) == 0:
+            raise RuntimeError("zip downloaded but no .nc file found inside")
 
-    zip_path.unlink(missing_ok=True)
-    return extracted_nc
+        if len(extracted_nc) > 1:
+            names = ", ".join(p.name for p in extracted_nc)
+            raise RuntimeError(
+                "zip contains multiple .nc files; expected exactly one monthly file.\n"
+                f"Found: {names}"
+            )
+
+        os.replace(extracted_nc[0], target)
+        return target
+
+    finally:
+        zip_path.unlink(missing_ok=True)
+        shutil.rmtree(tmp_extract_dir, ignore_errors=True)
 
 
-def move_single_netcdf(src_path: Path, dest_dir: Path, yyyymm: str):
+def move_single_netcdf(src_path: Path, target: Path) -> Path:
     """
-    단일 netCDF 파일이면 목적지로 옮겨 .nc로 저장
+    단일 netCDF 파일이면 target 이름으로 저장
     """
-    target = dest_dir / f"ERA5_daily_{yyyymm}.nc"
     os.replace(src_path, target)
-    return [target]
-
-
-def expected_nc_exists(dest_dir: Path) -> bool:
-    return any(dest_dir.glob("*.nc"))
+    return target
 
 
 def show_unknown_file_preview(path: Path, n=300):
@@ -120,11 +140,10 @@ def main():
     for year in YEARS:
         for month in MONTHS:
             yyyymm = f"{year}{month:02d}"
-            month_dir = OUTDIR / yyyymm if USE_MONTH_SUBDIR else OUTDIR
-            month_dir.mkdir(parents=True, exist_ok=True)
+            target_nc = target_nc_path(yyyymm)
 
-            if expected_nc_exists(month_dir):
-                print(f"[SKIP] {yyyymm}: nc file(s) already exist in {month_dir}")
+            if expected_nc_exists(yyyymm):
+                print(f"[SKIP] {yyyymm}: already exists -> {target_nc}")
                 continue
 
             tmp_path = OUTDIR / f"{yyyymm}.download.part"
@@ -145,6 +164,7 @@ def main():
             for attempt in range(1, MAX_RETRIES + 1):
                 try:
                     print(f"[GET ] {yyyymm} (attempt {attempt}/{MAX_RETRIES})")
+
                     if tmp_path.exists():
                         tmp_path.unlink()
 
@@ -153,19 +173,12 @@ def main():
                     ftype = detect_file_type(tmp_path)
 
                     if ftype == "zip":
-                        extracted_nc = extract_zip_keep_only_nc(tmp_path, month_dir)
-                        if extracted_nc:
-                            print(f"[DONE] {yyyymm}: extracted {len(extracted_nc)} nc file(s)")
-                            for f in extracted_nc:
-                                print(f"       - {f}")
-                        else:
-                            raise RuntimeError("zip downloaded but no .nc file found inside")
+                        saved = extract_zip_to_single_target(tmp_path, target_nc)
+                        print(f"[DONE] {yyyymm}: extracted zip -> {saved}")
 
                     elif ftype == "netcdf":
-                        saved = move_single_netcdf(tmp_path, month_dir, yyyymm)
-                        print(f"[DONE] {yyyymm}: saved netCDF directly")
-                        for f in saved:
-                            print(f"       - {f}")
+                        saved = move_single_netcdf(tmp_path, target_nc)
+                        print(f"[DONE] {yyyymm}: saved netCDF directly -> {saved}")
 
                     else:
                         preview = show_unknown_file_preview(tmp_path, n=500)
@@ -182,6 +195,9 @@ def main():
 
                     if tmp_path.exists():
                         tmp_path.unlink(missing_ok=True)
+
+                    if target_nc.exists():
+                        target_nc.unlink(missing_ok=True)
 
                     if attempt < MAX_RETRIES:
                         time.sleep(RETRY_WAIT_SEC)

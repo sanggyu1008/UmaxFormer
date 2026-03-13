@@ -1,47 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT=/mnt/d/project/01_ENSO/01_data/01_raw/oras5
+command -v cdo >/dev/null 2>&1 || { echo "[error] cdo not found"; exit 127; }
+command -v ncrcat >/dev/null 2>&1 || { echo "[error] ncrcat not found"; exit 127; }
+command -v ncks >/dev/null 2>&1 || { echo "[error] ncks not found"; exit 127; }
 
-# =========================
-# uos
-# =========================
-mkdir -p "$ROOT/zonal_velocity/_surf2d"
+ROOT="/mnt/d/project/01_ENSO/01_data/01_raw/oras5"
+TMP="${ROOT}/_tmp_surface_oras5"
 
-for f in "$ROOT"/zonal_velocity/vozocrtx_control_monthly_highres_3D_*.nc; do
-    b=$(basename "$f")
-    cdo -L -O --reduce_dim sellevidx,1 "$f" "$ROOT/zonal_velocity/_surf2d/$b"
-done
+mkdir -p "$TMP"
 
-cdo -L -O mergetime \
-    "$ROOT"/zonal_velocity/_surf2d/vozocrtx_control_monthly_highres_3D_*.nc \
-    "$ROOT"/zonal_velocity/_surf2d/vozocrtx_surface_2d_1958-1978.nc
+build_one() {
+    local INDIR="$1"
+    local STEM="$2"      # vozocrtx or vomecrty
+    local OUTVAR="$3"    # uos or vos
+    local WORK="${TMP}/${OUTVAR}"
+    local SELDIR="${WORK}/selz"
 
-cdo -L -O chname,vozocrtx,uos \
-    "$ROOT"/zonal_velocity/_surf2d/vozocrtx_surface_2d_1958-1978.nc \
-    "$ROOT"/uos.1958-1978.nc
+    mkdir -p "$SELDIR"
 
-# =========================
-# vos
-# =========================
-mkdir -p "$ROOT/meridional_velocity/_surf2d"
+    echo "=== building ${OUTVAR} from ${STEM} ==="
 
-for f in "$ROOT"/meridional_velocity/vomecrty_control_monthly_highres_3D_*.nc; do
-    b=$(basename "$f")
-    cdo -L -O --reduce_dim sellevidx,1 "$f" "$ROOT/meridional_velocity/_surf2d/$b"
-done
+    shopt -s nullglob
+    local files=( "${INDIR}/${STEM}"_control_monthly_highres_3D_*.nc )
+    shopt -u nullglob
 
-cdo -L -O mergetime \
-    "$ROOT"/meridional_velocity/_surf2d/vomecrty_control_monthly_highres_3D_*.nc \
-    "$ROOT"/meridional_velocity/_surf2d/vomecrty_surface_2d_1958-1978.nc
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "[error] no input files found for ${STEM} in ${INDIR}"
+        exit 1
+    fi
 
-cdo -L -O chname,vomecrty,vos \
-    "$ROOT"/meridional_velocity/_surf2d/vomecrty_surface_2d_1958-1978.nc \
-    "$ROOT"/vos.1958-1978.nc
+    # 1) 표층 level만 선택하되, 아직 reduce_dim 하지 않음
+    for f in "${files[@]}"; do
+        b=$(basename "$f")
+        out="${SELDIR}/${b}"
 
-echo "=== check ==="
-cdo showname "$ROOT/uos.1958-1978.nc"
-cdo showname "$ROOT/vos.1958-1978.nc"
-cdo ntime "$ROOT/uos.1958-1978.nc"
-cdo ntime "$ROOT/vos.1958-1978.nc"
+        cdo -L -O sellevidx,1 "$f" "$out"
 
+        # 2) ncrcat이 확실히 시간축으로 이어붙일 수 있게 record dimension 보정
+        ncks -O --mk_rec_dmn time_counter "$out" "$out"
+    done
+
+    # 3) 시간 병합
+    ncrcat -O "${SELDIR}"/*.nc "${WORK}/${STEM}_surface_3d_1958-1978.nc"
+
+    # 4) 병합 후 singleton depth 차원 제거
+    cdo -L -O --reduce_dim copy \
+        "${WORK}/${STEM}_surface_3d_1958-1978.nc" \
+        "${WORK}/${STEM}_surface_2d_1958-1978.nc"
+
+    # 5) 변수명 변경
+    cdo -L -O chname,${STEM},${OUTVAR} \
+        "${WORK}/${STEM}_surface_2d_1958-1978.nc" \
+        "${ROOT}/${OUTVAR}.1958-1978.nc"
+
+    echo "=== check: ${OUTVAR} ==="
+    cdo showname "${ROOT}/${OUTVAR}.1958-1978.nc"
+    cdo ntime   "${ROOT}/${OUTVAR}.1958-1978.nc"
+    ncdump -h   "${ROOT}/${OUTVAR}.1958-1978.nc" | sed -n '1,40p'
+    echo
+}
+
+build_one "${ROOT}/zonal_velocity"      "vozocrtx" "uos"
+build_one "${ROOT}/meridional_velocity" "vomecrty" "vos"
+
+echo "[done]"

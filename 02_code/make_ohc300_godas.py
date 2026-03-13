@@ -15,8 +15,8 @@ import xarray as xr
 # ============================================================
 
 BASE_DIR = Path('/mnt/d/project/01_ENSO/01_data/01_raw/godas')
-SRC_FILE = 'pottmp.1980-2025.nc'
-OUT_FILE = 'ohc300.1980-2025.nc'
+SRC_FILE = 'pottmp.198001-202512.nc'
+OUT_FILE = 'ohc300.198001-202512.nc'
 SRC_VAR = 'pottmp'
 OUT_VAR = 'ohc300'
 
@@ -124,7 +124,7 @@ def compute_ohc300(
     time_dim = find_dim(th, TIME_DIM_CANDIDATES, kind='time')
 
     th = th.sortby(depth_dim)
-    z = ds[depth_dim].sortby(ds[depth_dim])
+    z = th[depth_dim]
     th = maybe_chunk(th, time_dim, time_chunk)
 
     bounds = infer_bounds_from_midpoints(z)
@@ -152,10 +152,14 @@ def compute_ohc300(
     if mask_shallow:
         ohc = ohc.where(deep_enough)
 
+    ohc = ohc.astype('float32')
     ohc = ohc.rename(OUT_VAR)
     out = ohc.to_dataset(name=OUT_VAR)
     out.attrs.update(ds.attrs)
     out = carry_aux_vars(ds, out, OUT_VAR)
+
+    for key in ('_FillValue', 'missing_value', 'valid_min', 'valid_max', 'valid_range'):
+        out[OUT_VAR].attrs.pop(key, None)
 
     out[OUT_VAR].attrs.update({
         'long_name': f'Ocean heat content integrated from 0 to {zmax:g} m',
@@ -181,12 +185,14 @@ def compute_ohc300(
     )
     append_history(out, msg)
 
+    fill = np.float32(1.0e20)
     encoding = {
         OUT_VAR: {
             'zlib': True,
             'complevel': 4,
             'shuffle': True,
             'dtype': 'float32',
+            '_FillValue': fill,
         }
     }
     out.to_netcdf(out_path, encoding=encoding)

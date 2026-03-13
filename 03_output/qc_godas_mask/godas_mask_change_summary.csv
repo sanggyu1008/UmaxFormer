@@ -1,0 +1,7 @@
+variable,file,status,n_time,n_grid,changed_cells,fraction_changed,max_flip_count,mean_flip_on_changed_cells,nan_count_min,nan_count_max,nan_count_range,note
+mlotst,/mnt/d/project/01_ENSO/01_data/01_raw/godas/mlotst.198001-202512.nc,REVIEW,552,150480,18767,0.12471424774056353,60,27.46928118505888,45352,59340,13988,inspect maps and time series
+ohc300,/mnt/d/project/01_ENSO/01_data/01_raw/godas/ohc300.198001-202512.nc,OK,552,150480,0,0.0,0,0.0,45352,45352,0,small mask variation
+sos,/mnt/d/project/01_ENSO/01_data/01_raw/godas/sos.198001-202512.nc,OK,552,150480,0,0.0,0,0.0,45352,45352,0,small mask variation
+tos,/mnt/d/project/01_ENSO/01_data/01_raw/godas/tos.198001-202512.nc,OK,552,150480,647,0.004299574694311537,6,2.060278207109737,45352,45359,7,small mask variation
+uos,/mnt/d/project/01_ENSO/01_data/01_raw/godas/uos.198001-202512.nc,REVIEW,552,150480,2346,0.015590111642743222,6,2.130434782608696,48983,49002,19,inspect maps and time series
+vos,/mnt/d/project/01_ENSO/01_data/01_raw/godas/vos.198001-202512.nc,OK,552,150480,1165,0.007741892610313663,8,2.0952789699570817,48983,48995,12,small mask variation

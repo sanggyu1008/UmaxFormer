@@ -73,70 +73,98 @@ def compute_ohc300(
     mask_shallow: bool,
     shallow_eps: float,
 ):
-    ds = xr.open_dataset(infile, decode_times=False)
+    if int(time_chunk) < 1:
+        raise ValueError(f"time_chunk must be >= 1, got {time_chunk}")
 
-    if "thetao" not in ds.variables:
-        raise ValueError(f"'thetao' not found in {infile}")
+    with xr.open_dataset(infile, decode_times=False) as ds:
+        if "thetao" not in ds.variables:
+            raise ValueError(f"'thetao' not found in {infile}")
 
-    th = ds["thetao"]
-    depth_dim = find_dim(th, DEPTH_DIM_CANDIDATES, kind="depth")
-    time_dim  = find_dim(th, TIME_DIM_CANDIDATES,  kind="time")
+        th = ds["thetao"]
+        depth_dim = find_dim(th, DEPTH_DIM_CANDIDATES, kind="depth")
+        time_dim  = find_dim(th, TIME_DIM_CANDIDATES,  kind="time")
 
-    th = th.sortby(depth_dim)
-    th = th.chunk({time_dim: int(time_chunk)})
+        # depth 정렬 후, 반드시 정렬된 depth 좌표를 사용
+        th = th.sortby(depth_dim)
+        th = th.chunk({time_dim: int(time_chunk)})
 
-    z = ds[depth_dim]
-    bnds = infer_bounds_from_midpoints(z)          # (A)
-    dz = overlap_thickness(bnds, 0.0, zmax)        # (depth_dim)
+        z = th[depth_dim]
+        bnds = infer_bounds_from_midpoints(z)
+        dz = overlap_thickness(bnds, 0.0, float(zmax)).astype("float64")
 
-    # Kelvin -> degC 옵션 (anomaly 계획이더라도 수치 안정성 측면에서 보통 이게 낫다)
-    units = str(th.attrs.get("units", "")).lower()
-    th_use = th
-    if to_degC and units in ("k", "kelvin"):
-        th_use = th - 273.15
+        # Kelvin -> degC 옵션
+        units = str(th.attrs.get("units", "")).lower()
+        th_use = th
+        if to_degC and units in ("k", "kelvin"):
+            th_use = th - 273.15
 
-    # 얕은 바다 마스크(D): 0–300을 전부 채우는지 확인
-    if mask_shallow:
-        # ocean mask는 시간에 따라 바뀌지 않는다는 가정 하에 첫 시점 사용(빠르고 충분히 안전한 경우가 대부분)
-        wet_3d = th_use.isel({time_dim: 0}).notnull()          # (depth, y, x)
-        coverage = (dz.where(wet_3d) ).sum(dim=depth_dim)      # (y, x)
-        deep_enough = coverage >= (zmax - shallow_eps)         # (y, x)
-    else:
-        deep_enough = None
+        # shallow(<zmax) mask
+        if mask_shallow:
+            wet_3d = th_use.isel({time_dim: 0}).notnull()
+            coverage = dz.where(wet_3d).sum(dim=depth_dim, skipna=True)
+            deep_enough = coverage >= (float(zmax) - float(shallow_eps))
+        else:
+            deep_enough = None
 
-    # 적분: NaN은 0으로 채우고, 결과는 마스크로 되돌림
-    ocean_mask_time = th_use.notnull().any(depth_dim)  # (time, y, x)
-    th_filled = th_use.where(th_use.notnull(), 0.0)
+        # 적분
+        ocean_mask_time = th_use.notnull().any(dim=depth_dim)
+        th_filled = th_use.fillna(0.0)
 
-    tint = (th_filled * dz).sum(dim=depth_dim)          # degC*m
-    ohc = tint * (rho0 * cp0)                           # J/m^2
+        tint = (th_filled * dz).sum(dim=depth_dim, skipna=False)   # degC * m
+        ohc = tint * (float(rho0) * float(cp0))                   # J m-2
 
-    # land/missing 복원
-    ohc = ohc.where(ocean_mask_time)
+        # land/missing 복원
+        ohc = ohc.where(ocean_mask_time)
 
-    # (D) shallow(<300m)인 격자점 전체 시간 결측 처리
-    if mask_shallow:
-        ohc = ohc.where(deep_enough)
+        # shallow grid mask
+        if mask_shallow:
+            ohc = ohc.where(deep_enough)
 
-    out = ohc.to_dataset(name="ohc300")
-    out.attrs.update(ds.attrs)
+        ohc = ohc.astype("float32")
+        ohc.name = "ohc300"
 
-    out["ohc300"].attrs.update({
-        "long_name": f"Ocean heat content integrated from 0 to {zmax} m",
-        "units": "J m-2",
-        "rho0": float(rho0),
-        "cp0": float(cp0),
-        "zmin": 0.0,
-        "zmax": float(zmax),
-        "dz_method": "midpoint_inferred_bounds_top0m",
-        "shallow_masked": int(mask_shallow),
-        "comment": "Computed from thetao by vertical integration using dz from midpoint-inferred bounds; overlap thickness with [0,zmax]."
-    })
+        out = ohc.to_dataset(name="ohc300")
+        out.attrs = dict(ds.attrs)
 
-    outfile.parent.mkdir(parents=True, exist_ok=True)
+        # 원본 thetao 메타데이터 일부 정리
+        out.attrs["variable_id"] = "ohc300"
+        if "notes" in out.attrs:
+            out.attrs["notes"] = str(out.attrs["notes"]).replace("thetao", "ohc300")
 
-    enc = {"ohc300": {"zlib": True, "complevel": 4, "shuffle": True, "dtype": "float32"}}
-    out.to_netcdf(outfile, encoding=enc)
+        # 변수 attrs 정리
+        for k in ("_FillValue", "missing_value", "valid_min", "valid_max", "valid_range"):
+            out["ohc300"].attrs.pop(k, None)
+
+        out["ohc300"].attrs.update({
+            "long_name": f"Ocean heat content integrated from 0 to {float(zmax)} m",
+            "units": "J m-2",
+            "rho0": float(rho0),
+            "cp0": float(cp0),
+            "zmin": 0.0,
+            "zmax": float(zmax),
+            "dz_method": "midpoint_inferred_bounds_top0m",
+            "shallow_masked": int(mask_shallow),
+            "comment": (
+                "Computed from thetao by vertical integration using dz from "
+                "midpoint-inferred bounds; overlap thickness with [0,zmax]."
+            ),
+        })
+
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+
+        # 중요: NaN _FillValue 금지, finite sentinel 사용
+        fill = np.float32(1.0e20)
+        enc = {
+            "ohc300": {
+                "zlib": True,
+                "complevel": 4,
+                "shuffle": True,
+                "dtype": "float32",
+                "_FillValue": fill,
+            }
+        }
+
+        out.to_netcdf(outfile, encoding=enc)
 
 def main():
     p = argparse.ArgumentParser()

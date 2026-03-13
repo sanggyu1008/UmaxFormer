@@ -19,11 +19,16 @@ ROOT="${1:-$DEFAULT_ROOT}"
 # canonicalize ROOT (fail fast if not accessible)
 ROOT="$(cd "$ROOT" && pwd)"
 
-# compression level (override: ZIPLVL=1 ./make_surface_fields.sh ...)
+# compression level
 ZIPLVL="${ZIPLVL:-4}"
 
-echo "[info] ROOT = $ROOT"
-echo "[info] ZIPLVL = $ZIPLVL"
+# remove singleton dimensions after selecting first level
+# 1 = use --reduce_dim, 0 = keep singleton vertical dimension
+REDUCE_DIM="${REDUCE_DIM:-1}"
+
+echo "[info] ROOT       = $ROOT"
+echo "[info] ZIPLVL     = $ZIPLVL"
+echo "[info] REDUCE_DIM = $REDUCE_DIM"
 echo
 
 make_one() {
@@ -37,8 +42,13 @@ make_one() {
     return 0
   fi
 
+  local -a cdo_opts=(-O -L -f nc4c -z "zip_${ZIPLVL}")
+  if [[ "$REDUCE_DIM" == "1" ]]; then
+    cdo_opts+=(--reduce_dim)
+  fi
+
   echo "[make] $out"
-  if cdo -O -L -f nc4c -z "zip_${ZIPLVL}" "$@" "$in" "$tmp"; then
+  if cdo "${cdo_opts[@]}" "$@" "$in" "$tmp"; then
     mv -f "$tmp" "$out"
   else
     rm -f "$tmp"
