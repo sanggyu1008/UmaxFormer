@@ -1,0 +1,8 @@
+ ! NOAA/PMEL TMAP
+ ! PyFerret v7.63 (optimized)
+ ! Linux 5.11.0-1021-azure - 12/10/21
+ ! 23-Mar-26 10:05     
+
+set mode verify
+cd ..
+exit
