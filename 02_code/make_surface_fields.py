@@ -6,11 +6,14 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
 import xarray as xr
+
+from preprocess_config import GODAS_RAW_FILE_CANDIDATES, GODAS_SURFACE_FILES, ORAS5_RANGE_TAG, require_existing_path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_CMIP6_ROOT = (SCRIPT_DIR / "../01_data/01_raw/cmip6/ssp370").resolve()
@@ -22,7 +25,7 @@ DROP_ATTRS_AFTER_DERIVATION = {
     "actual_range", "valid_range", "valid_min", "valid_max", "scale_factor", "add_offset"
 }
 KGKG_UNITS = {
-    "kg/kg", "kg kg-1", "kg kg^-1", "kgkg-1", "kgkg^-1", "1", "fraction", "mass fraction"
+    "kg/kg", "kg kg-1", "kg kg^-1", "kgkg-1", "kgkg^-1", "mass fraction"
 }
 
 CMIP6_JOBS = {
@@ -35,29 +38,29 @@ GODAS_JOBS = {
     "pottmp": {
         "src_name": "pottmp",
         "dst_name": "tos",
-        "src_file": "pottmp.1980-2025.nc",
-        "dst_file": "tos.1980-2025.nc",
+        "src_files": GODAS_RAW_FILE_CANDIDATES["pottmp"],
+        "dst_file": GODAS_SURFACE_FILES["tos"],
         "long_name": "Surface potential temperature",
     },
     "salt": {
         "src_name": "salt",
         "dst_name": "sos",
-        "src_file": "salt.1980-2025.nc",
-        "dst_file": "sos.1980-2025.nc",
+        "src_files": GODAS_RAW_FILE_CANDIDATES["salt"],
+        "dst_file": GODAS_SURFACE_FILES["sos"],
         "long_name": "Surface salinity",
     },
     "ucur": {
         "src_name": "ucur",
         "dst_name": "uos",
-        "src_file": "ucur.1980-2025.nc",
-        "dst_file": "uos.1980-2025.nc",
+        "src_files": GODAS_RAW_FILE_CANDIDATES["ucur"],
+        "dst_file": GODAS_SURFACE_FILES["uos"],
         "long_name": "Surface eastward current",
     },
     "vcur": {
         "src_name": "vcur",
         "dst_name": "vos",
-        "src_file": "vcur.1980-2025.nc",
-        "dst_file": "vos.1980-2025.nc",
+        "src_files": GODAS_RAW_FILE_CANDIDATES["vcur"],
+        "dst_file": GODAS_SURFACE_FILES["vos"],
         "long_name": "Surface northward current",
     },
 }
@@ -209,6 +212,18 @@ def save_dataset(ds: xr.Dataset, out_path: Path) -> None:
     replace_file(tmp_path, out_path)
 
 
+def smoke_check_output(out_path: Path, expected_var: str) -> None:
+    with xr.open_dataset(out_path, decode_times=False) as ds:
+        if expected_var not in ds.data_vars:
+            raise ValueError(f"{out_path} missing expected variable '{expected_var}'")
+        dims = set(ds[expected_var].dims)
+        if {"time", "lat", "lon"}.issubset(dims):
+            return
+        if {"time_counter", "y", "x"}.issubset(dims):
+            return
+        raise ValueError(f"{out_path} has unexpected dims for {expected_var}: {ds[expected_var].dims}")
+
+
 
 def run_cmip6(root: Path, vars_to_process: Iterable[str], zip_level: int, reduce_dim: bool, overwrite: bool) -> None:
     ensure_command("cdo")
@@ -266,11 +281,12 @@ def run_godas(root: Path, vars_to_process: Iterable[str], overwrite: bool, keep_
 
     for key in vars_to_process:
         job = GODAS_JOBS[key]
-        src_path = root / job["src_file"]
+        try:
+            src_path = require_existing_path(root, job["src_files"], f"GODAS input for {key}")
+        except FileNotFoundError as exc:
+            raise SystemExit(f"[error] {exc}") from exc
         out_path = root / job["dst_file"]
 
-        if not src_path.exists():
-            raise SystemExit(f"[error] missing GODAS input file: {src_path}")
         if out_path.exists() and not overwrite:
             log(f"[skip] {out_path}")
             continue
@@ -285,6 +301,7 @@ def run_godas(root: Path, vars_to_process: Iterable[str], overwrite: bool, keep_
             convert_salt_to_gkg=not keep_salt_kgkg,
         )
         save_dataset(out, out_path)
+        smoke_check_output(out_path, job["dst_name"])
 
     log("[done] GODAS surface fields generated.")
 
@@ -323,25 +340,28 @@ def run_oras5(
         if not files:
             raise SystemExit(f"[error] no input files found for {stem} in {indir}")
 
-        work = tmp_root / outvar
-        seldig = work / "selz"
-        seldig.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix=f"oras5_{outvar}_", dir=str(tmp_root)) as work_str:
+            work = Path(work_str)
+            seldig = work / "selz"
+            seldig.mkdir(parents=True, exist_ok=True)
 
-        log(f"=== building {outvar} from {stem} ===")
+            log(f"=== building {outvar} from {stem} ===")
 
-        for in_path in files:
-            sel_path = seldig / in_path.name
-            run(["cdo", "-L", "-O", "sellevidx,1", str(in_path), str(sel_path)])
-            run(["ncks", "-O", "--mk_rec_dmn", time_dim, str(sel_path), str(sel_path)])
+            for in_path in files:
+                sel_path = seldig / in_path.name
+                run(["cdo", "-L", "-O", "sellevidx,1", str(in_path), str(sel_path)])
+                run(["ncks", "-O", "--mk_rec_dmn", time_dim, str(sel_path), str(sel_path)])
 
-        merged3d = work / f"{stem}_surface_3d_{tag}.nc"
-        merged2d = work / f"{stem}_surface_2d_{tag}.nc"
-        tmp_out = out_path.with_name(out_path.name + f".tmp.{os.getpid()}")
+            merged3d = work / f"{stem}_surface_3d_{tag}.nc"
+            merged2d = work / f"{stem}_surface_2d_{tag}.nc"
+            tmp_out = out_path.with_name(out_path.name + f".tmp.{os.getpid()}")
 
-        run(["ncrcat", "-O", *[str(p) for p in sorted(seldig.glob("*.nc"))], str(merged3d)])
-        run(["cdo", "-L", "-O", "--reduce_dim", "copy", str(merged3d), str(merged2d)])
-        run(["cdo", "-L", "-O", f"chname,{stem},{outvar}", str(merged2d), str(tmp_out)])
-        replace_file(tmp_out, out_path)
+            run(["ncrcat", "-O", *[str(p) for p in sorted(seldig.glob("*.nc"))], str(merged3d)])
+            run(["cdo", "-L", "-O", "--reduce_dim", "copy", str(merged3d), str(merged2d)])
+            run(["cdo", "-L", "-O", f"chname,{stem},{outvar}", str(merged2d), str(tmp_out)])
+            replace_file(tmp_out, out_path)
+
+        smoke_check_output(out_path, outvar)
 
         if check:
             run(["cdo", "showname", str(out_path)])
@@ -414,7 +434,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--oras5-tag",
-        default="1958-1978",
+        default=ORAS5_RANGE_TAG,
         help="Output period tag for ORAS5 output filenames.",
     )
     p.add_argument(

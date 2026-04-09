@@ -1,0 +1,7 @@
+{
+  "experiment_name": "cnn_transformer_baseline_v3i",
+  "best_epoch": 1,
+  "best_val_loss": 0.6877946843361032,
+  "checkpoint_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_baseline_v3i/checkpoints/best.pt",
+  "history_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_baseline_v3i/logs/history.csv"
+}

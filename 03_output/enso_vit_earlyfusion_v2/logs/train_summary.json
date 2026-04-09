@@ -1,0 +1,7 @@
+{
+  "experiment_name": "enso_vit_earlyfusion_v2",
+  "best_epoch": 1,
+  "best_val_loss": 0.7402902841567993,
+  "checkpoint_path": "/home/sanggyu1008/project/01_ENSO/03_output/enso_vit_earlyfusion_v2/checkpoints/best.pt",
+  "history_path": "/home/sanggyu1008/project/01_ENSO/03_output/enso_vit_earlyfusion_v2/logs/history.csv"
+}

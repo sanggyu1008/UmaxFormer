@@ -1,0 +1,39 @@
+2026-04-08 16:18:20,893 | INFO | experiment=cnn_transformer_baseline_v5c | device=cuda | amp=True
+2026-04-08 16:18:20,894 | INFO | use_cache=True | cache_root=/home/sanggyu1008/project/01_ENSO/01_data/05_cache/cnn_transformer_baseline
+2026-04-08 16:18:20,894 | INFO | cache_namespace=multival_rerun_v1 | cache_mode=on_demand | cache_version=1 | cache_dtype=float32 | cache_dir=/home/sanggyu1008/project/01_ENSO/01_data/05_cache/cnn_transformer_baseline/multival_rerun_v1
+2026-04-08 16:18:20,894 | INFO | train pairs=14 | val pairs=2 | test pairs=1
+2026-04-08 16:18:20,894 | INFO | train samples=36878 | val samples=1478 | test samples=517
+2026-04-08 16:18:20,894 | INFO | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl']
+2026-04-08 16:18:20,894 | INFO | target_var=nino34
+2026-04-08 16:18:20,894 | INFO | input_normalization enabled=True | eps=1e-06
+2026-04-08 16:18:20,894 | INFO | train pair preview_count=5/14
+2026-04-08 16:18:20,895 | INFO | train pair[1/14] file=input_ACCESS-CM2_historical_ssp370_r1i1p1f1.nc -> target_ACCESS-CM2_historical_ssp370_r1i1p1f1.nc
+2026-04-08 16:18:20,895 | INFO | train pair[2/14] file=input_ACCESS-ESM1-5_historical_ssp370_r1i1p1f1.nc -> target_ACCESS-ESM1-5_historical_ssp370_r1i1p1f1.nc
+2026-04-08 16:18:20,895 | INFO | train pair[3/14] file=input_ACCESS-ESM1-5_historical_ssp370_r2i1p1f1.nc -> target_ACCESS-ESM1-5_historical_ssp370_r2i1p1f1.nc
+2026-04-08 16:18:20,895 | INFO | train pair[4/14] file=input_ACCESS-ESM1-5_historical_ssp370_r3i1p1f1.nc -> target_ACCESS-ESM1-5_historical_ssp370_r3i1p1f1.nc
+2026-04-08 16:18:20,895 | INFO | train pair[5/14] file=input_CMCC-ESM2_historical_ssp370_r1i1p1f1.nc -> target_CMCC-ESM2_historical_ssp370_r1i1p1f1.nc
+2026-04-08 16:18:20,895 | INFO | train excluded inputs=none
+2026-04-08 16:18:20,895 | INFO | validation pair files=['validation_dataset_soda_20crv2_187101_197812.nc -> validation_target_soda_20crv2_187101_197812.nc', 'validation_dataset_oras5_era5_195801_197812.nc -> validation_target_oras5_era5_195801_197812.nc']
+2026-04-08 16:18:20,965 | INFO | validation pair[1/2] name=soda_20crv2_1871_1978 | input=/home/sanggyu1008/project/01_ENSO/01_data/03_input/validation_dataset_soda_20crv2_187101_197812.nc | target=/home/sanggyu1008/project/01_ENSO/01_data/04_target/validation_target_soda_20crv2_187101_197812.nc
+2026-04-08 16:18:20,965 | INFO | validation pair[1/2] file=validation_dataset_soda_20crv2_187101_197812.nc -> validation_target_soda_20crv2_187101_197812.nc | time_range=1871-01-01T00:00:00.000000000..1978-12-01T00:00:00.000000000 | n_time=1296 | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl'] | target_var=nino34 | valid_anchors=1261
+2026-04-08 16:18:20,980 | INFO | validation pair[2/2] name=oras5_era5_1958_1978 | input=/home/sanggyu1008/project/01_ENSO/01_data/03_input/validation_dataset_oras5_era5_195801_197812.nc | target=/home/sanggyu1008/project/01_ENSO/01_data/04_target/validation_target_oras5_era5_195801_197812.nc
+2026-04-08 16:18:20,980 | INFO | validation pair[2/2] file=validation_dataset_oras5_era5_195801_197812.nc -> validation_target_oras5_era5_195801_197812.nc | time_range=1958-01-01T00:00:00.000000000..1978-12-01T00:00:00.000000000 | n_time=252 | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl'] | target_var=nino34 | valid_anchors=217
+2026-04-08 16:18:20,980 | INFO | test pair files=['test_dataset_godas_era5_198001_202512.nc -> test_target_nino34_ersstv5_198001_202512.nc']
+2026-04-08 16:18:21,008 | INFO | test pair[1/1] name=godas_era5_input__ersstv5_nino34_target | input=/home/sanggyu1008/project/01_ENSO/01_data/03_input/test_dataset_godas_era5_198001_202512.nc | target=/home/sanggyu1008/project/01_ENSO/01_data/04_target/test_target_nino34_ersstv5_198001_202512.nc
+2026-04-08 16:18:21,008 | INFO | test pair[1/1] file=test_dataset_godas_era5_198001_202512.nc -> test_target_nino34_ersstv5_198001_202512.nc | time_range=1980-01-01T00:00:00.000000000..2025-12-01T00:00:00.000000000 | n_time=552 | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl'] | target_var=nino34 | valid_anchors=517
+2026-04-08 16:18:21,009 | INFO | run_test_each_epoch=False | run_final_test_after_training=False
+2026-04-08 16:18:21,009 | INFO | best_metric=val_loss | best_metric_mode=min
+2026-04-08 16:18:21,009 | INFO | input_norm_stats mean_shape=(10,) | std_shape=(10,)
+2026-04-08 16:18:22,845 | INFO | model=cnn_transformer_baseline | trainable_params=4511192
+2026-04-08 16:18:23,398 | INFO | optimizer=AdamW | base_lr=3.000e-05 | warmup_epochs=0 | warmup_start_factor=0.100
+2026-04-08 16:41:55,104 | INFO | epoch=001 | lr=3.000e-05 | train_loss=0.632371 | val_loss=0.737700 | val_corr=0.3858
+2026-04-08 17:04:59,340 | INFO | epoch=002 | lr=3.000e-05 | train_loss=0.526185 | val_loss=0.867666 | val_corr=0.3879
+2026-04-08 17:28:02,366 | INFO | epoch=003 | lr=3.000e-05 | train_loss=0.458322 | val_loss=0.830888 | val_corr=0.3877
+2026-04-08 17:51:28,472 | INFO | epoch=004 | lr=3.000e-05 | train_loss=0.385206 | val_loss=0.956769 | val_corr=0.3788
+2026-04-08 18:14:57,656 | INFO | epoch=005 | lr=3.000e-05 | train_loss=0.320349 | val_loss=0.902576 | val_corr=0.3710
+2026-04-08 18:37:49,630 | INFO | epoch=006 | lr=1.500e-05 | train_loss=0.256671 | val_loss=0.908785 | val_corr=0.3772
+2026-04-08 19:00:40,324 | INFO | epoch=007 | lr=1.500e-05 | train_loss=0.230723 | val_loss=0.921524 | val_corr=0.3818
+2026-04-08 19:23:20,587 | INFO | epoch=008 | lr=1.500e-05 | train_loss=0.210523 | val_loss=0.966041 | val_corr=0.3639
+2026-04-08 19:45:59,301 | INFO | epoch=009 | lr=1.500e-05 | train_loss=0.193810 | val_loss=0.934766 | val_corr=0.3794
+2026-04-08 19:45:59,318 | INFO | early_stopping epoch=9 | best_epoch=1 | best_metric=val_loss | best_metric_mode=min | best_metric_value=0.737700
+2026-04-08 19:45:59,492 | INFO | training_finished | best_epoch=1 | best_metric=val_loss | best_metric_mode=min | best_metric_value=0.737700

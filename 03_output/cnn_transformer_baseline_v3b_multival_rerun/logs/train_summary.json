@@ -1,0 +1,16 @@
+{
+  "experiment_name": "cnn_transformer_baseline_v3b_multival_rerun",
+  "best_metric_name": "val_loss",
+  "best_metric_mode": "min",
+  "best_metric_value": 0.8565680968000534,
+  "best_epoch": 2,
+  "best_epoch_val_loss": 0.8565680968000534,
+  "best_epoch_val_corr": 0.40167315928288333,
+  "best_val_loss": 0.8565680968000534,
+  "best_epoch_by_val_loss": 2,
+  "min_val_loss": 0.8565680968000534,
+  "best_epoch_by_val_corr": 2,
+  "max_val_corr": 0.40167315928288333,
+  "checkpoint_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_baseline_v3b_multival_rerun/checkpoints/best.pt",
+  "history_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_baseline_v3b_multival_rerun/logs/history.csv"
+}

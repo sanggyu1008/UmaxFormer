@@ -1,0 +1,40 @@
+2026-04-06 10:32:57,447 | INFO | experiment=cnn_transformer_baseline_v4c | device=cuda | amp=True
+2026-04-06 10:32:57,447 | INFO | use_cache=True | cache_root=/home/sanggyu1008/project/01_ENSO/01_data/05_cache/cnn_transformer_baseline_v2
+2026-04-06 10:32:57,448 | INFO | train pairs=17 | val pairs=1 | test pairs=1
+2026-04-06 10:32:57,448 | INFO | train samples=16949 | val samples=913 | test samples=517
+2026-04-06 10:32:57,448 | INFO | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl']
+2026-04-06 10:32:57,448 | INFO | target_var=nino34
+2026-04-06 10:32:57,448 | INFO | input_normalization enabled=True | eps=1e-06
+2026-04-06 10:32:57,448 | INFO | run_test_each_epoch=False | run_final_test_after_training=False
+2026-04-06 10:32:57,448 | INFO | best_metric=val_corr | best_metric_mode=max
+2026-04-06 10:32:57,448 | INFO | input_norm_stats mean_shape=(10,) | std_shape=(10,)
+2026-04-06 10:32:58,735 | INFO | model=cnn_transformer_baseline | trainable_params=4379864
+2026-04-06 10:33:03,274 | INFO | optimizer=AdamW | base_lr=3.000e-05 | warmup_epochs=0 | warmup_start_factor=0.100
+2026-04-06 10:43:26,958 | INFO | epoch=001 | lr=3.000e-05 | train_loss=0.799347 | val_loss=0.733306 | val_corr=0.3411
+2026-04-06 10:53:48,288 | INFO | epoch=002 | lr=3.000e-05 | train_loss=0.640350 | val_loss=1.028944 | val_corr=0.3387
+2026-04-06 11:04:09,722 | INFO | epoch=003 | lr=3.000e-05 | train_loss=0.565042 | val_loss=0.780901 | val_corr=0.3530
+2026-04-06 11:23:05,190 | INFO | experiment=cnn_transformer_baseline_v4c | device=cuda | amp=True
+2026-04-06 11:23:05,190 | INFO | use_cache=True | cache_root=/home/sanggyu1008/project/01_ENSO/01_data/05_cache/cnn_transformer_baseline_v2
+2026-04-06 11:23:05,190 | INFO | train pairs=17 | val pairs=1 | test pairs=1
+2026-04-06 11:23:05,190 | INFO | train samples=16949 | val samples=913 | test samples=517
+2026-04-06 11:23:05,190 | INFO | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl']
+2026-04-06 11:23:05,190 | INFO | target_var=nino34
+2026-04-06 11:23:05,190 | INFO | input_normalization enabled=True | eps=1e-06
+2026-04-06 11:23:05,190 | INFO | run_test_each_epoch=False | run_final_test_after_training=False
+2026-04-06 11:23:05,190 | INFO | best_metric=val_corr | best_metric_mode=max
+2026-04-06 11:23:05,190 | INFO | input_norm_stats mean_shape=(10,) | std_shape=(10,)
+2026-04-06 11:23:06,493 | INFO | model=cnn_transformer_baseline | trainable_params=4379864
+2026-04-06 11:23:08,123 | INFO | optimizer=AdamW | base_lr=3.000e-05 | warmup_epochs=0 | warmup_start_factor=0.100
+2026-04-06 11:33:43,264 | INFO | epoch=001 | lr=3.000e-05 | train_loss=0.799347 | val_loss=0.733306 | val_corr=0.3411
+2026-04-06 11:44:05,771 | INFO | epoch=002 | lr=3.000e-05 | train_loss=0.640350 | val_loss=1.028944 | val_corr=0.3387
+2026-04-06 11:54:27,091 | INFO | epoch=003 | lr=3.000e-05 | train_loss=0.565042 | val_loss=0.780901 | val_corr=0.3530
+2026-04-06 12:04:48,425 | INFO | epoch=004 | lr=3.000e-05 | train_loss=0.490752 | val_loss=1.031834 | val_corr=0.3519
+2026-04-06 12:15:09,273 | INFO | epoch=005 | lr=3.000e-05 | train_loss=0.424312 | val_loss=1.041809 | val_corr=0.3254
+2026-04-06 12:25:30,130 | INFO | epoch=006 | lr=1.500e-05 | train_loss=0.352283 | val_loss=1.197340 | val_corr=0.3358
+2026-04-06 12:35:51,012 | INFO | epoch=007 | lr=1.500e-05 | train_loss=0.322983 | val_loss=1.157659 | val_corr=0.3323
+2026-04-06 12:46:11,734 | INFO | epoch=008 | lr=1.500e-05 | train_loss=0.297602 | val_loss=1.101539 | val_corr=0.3280
+2026-04-06 12:56:32,382 | INFO | epoch=009 | lr=1.500e-05 | train_loss=0.279261 | val_loss=1.064011 | val_corr=0.3251
+2026-04-06 13:06:53,250 | INFO | epoch=010 | lr=7.500e-06 | train_loss=0.253206 | val_loss=1.180323 | val_corr=0.3284
+2026-04-06 13:17:13,982 | INFO | epoch=011 | lr=7.500e-06 | train_loss=0.243103 | val_loss=1.107122 | val_corr=0.3333
+2026-04-06 13:17:13,983 | INFO | early_stopping epoch=11 | best_epoch=3 | best_metric=val_corr | best_metric_mode=max | best_metric_value=0.352962
+2026-04-06 13:17:13,999 | INFO | training_finished | best_epoch=3 | best_metric=val_corr | best_metric_mode=max | best_metric_value=0.352962

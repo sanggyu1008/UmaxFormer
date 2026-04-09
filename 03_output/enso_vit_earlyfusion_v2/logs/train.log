@@ -1,0 +1,22 @@
+2026-04-03 12:11:37,762 | INFO | experiment=enso_vit_earlyfusion_v2 | device=cuda | amp=True
+2026-04-03 12:11:37,763 | INFO | use_cache=True | cache_root=/home/sanggyu1008/project/01_ENSO/01_data/05_cache/enso_vit_earlyfusion_v2
+2026-04-03 12:11:37,763 | INFO | train pairs=17 | val pairs=1 | test pairs=1
+2026-04-03 12:11:37,763 | INFO | train samples=16949 | val samples=913 | test samples=517
+2026-04-03 12:11:37,763 | INFO | input_vars=['tos', 'ohc300', 'mlotst', 'sos', 'uos', 'vos', 'uas', 'uasmax', 'vas', 'psl']
+2026-04-03 12:11:37,763 | INFO | target_var=nino34
+2026-04-03 12:11:37,763 | INFO | input_normalization enabled=True | eps=1e-06
+2026-04-03 12:11:37,763 | INFO | run_test_each_epoch=False | run_final_test_after_training=False
+2026-04-03 12:11:37,763 | INFO | input_norm_stats mean_shape=(10,) | std_shape=(10,)
+2026-04-03 12:11:44,545 | INFO | model=enso_vit_earlyfusion_v1 | trainable_params=2080258
+2026-04-03 12:11:48,206 | INFO | optimizer=AdamW | base_lr=3.000e-05 | warmup_epochs=5 | warmup_start_factor=0.100
+2026-04-03 13:16:54,871 | INFO | epoch=001 | lr=3.000e-06 | train_loss=1.222874 | val_loss=0.740290 | val_corr=-0.0044
+2026-04-03 13:24:32,644 | INFO | epoch=002 | lr=9.750e-06 | train_loss=1.165635 | val_loss=0.904041 | val_corr=0.0331
+2026-04-03 13:31:28,527 | INFO | epoch=003 | lr=1.650e-05 | train_loss=1.115317 | val_loss=1.014086 | val_corr=0.0068
+2026-04-03 13:38:19,129 | INFO | epoch=004 | lr=2.325e-05 | train_loss=1.030369 | val_loss=1.396375 | val_corr=0.0399
+2026-04-03 13:45:14,228 | INFO | epoch=005 | lr=3.000e-05 | train_loss=0.825394 | val_loss=1.431068 | val_corr=0.1206
+2026-04-03 13:52:04,549 | INFO | epoch=006 | lr=3.000e-05 | train_loss=0.736829 | val_loss=1.332242 | val_corr=0.1407
+2026-04-03 13:58:55,023 | INFO | epoch=007 | lr=3.000e-05 | train_loss=0.665017 | val_loss=1.047586 | val_corr=0.1539
+2026-04-03 14:05:45,564 | INFO | epoch=008 | lr=3.000e-05 | train_loss=0.614233 | val_loss=1.179109 | val_corr=0.1478
+2026-04-03 14:13:49,173 | INFO | epoch=009 | lr=3.000e-05 | train_loss=0.571756 | val_loss=1.102138 | val_corr=0.1540
+2026-04-03 14:13:49,174 | INFO | early_stopping epoch=9 | best_epoch=1 | best_val_loss=0.740290
+2026-04-03 14:13:49,176 | INFO | training_finished | best_epoch=1 | best_val_loss=0.740290

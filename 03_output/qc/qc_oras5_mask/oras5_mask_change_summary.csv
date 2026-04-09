@@ -1,7 +1,0 @@
-variable,file,status,n_time,n_grid,changed_cells,fraction_changed,max_flip_count,mean_flip_on_changed_cells,nan_count_min,nan_count_max,nan_count_range,note
-mlotst,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/mlotst.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,568142,568142,0,small mask variation
-ohc300,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/ohc300.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,568142,568142,0,small mask variation
-sos,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/sos.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,568142,568142,0,small mask variation
-tos,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/tos.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,568142,568142,0,small mask variation
-uos,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/uos.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,575387,575387,0,small mask variation
-vos,/mnt/d/project/01_ENSO/01_data/01_raw/oras5/vos.195801-197812.nc,OK,252,1472282,0,0.0,0,0.0,574990,574990,0,small mask variation
