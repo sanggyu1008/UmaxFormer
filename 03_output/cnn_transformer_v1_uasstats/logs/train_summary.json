@@ -1,0 +1,16 @@
+{
+  "experiment_name": "cnn_transformer_v1_uasstats",
+  "best_metric_name": "val_loss",
+  "best_metric_mode": "min",
+  "best_metric_value": 0.615752710306898,
+  "best_epoch": 4,
+  "best_epoch_val_loss": 0.615752710306898,
+  "best_epoch_val_corr": 0.41069849983541323,
+  "best_val_loss": 0.615752710306898,
+  "best_epoch_by_val_loss": 4,
+  "min_val_loss": 0.615752710306898,
+  "best_epoch_by_val_corr": 3,
+  "max_val_corr": 0.4227570964650764,
+  "checkpoint_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_v1_uasstats/checkpoints/best.pt",
+  "history_path": "/home/sanggyu1008/project/01_ENSO/03_output/cnn_transformer_v1_uasstats/logs/history.csv"
+}
