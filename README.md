@@ -1,18 +1,21 @@
-﻿# Config Layout
+# UmaxFormer Experiment Docs
 
-모든 실행 config는 프로젝트 루트 기준 상대경로를 사용합니다.
+이 디렉토리는 실험 설명과 실험군별 해석 기준을 관리합니다. 실행 명령은 [RUN_COMMANDS.md](../../RUN_COMMANDS.md)에서 관리합니다.
 
-| Path | Role |
+## Documents
+
+| Document | Purpose |
 | --- | --- |
-| `experiments/umaxformer_v1/` | SODA+ORAS5 validation pair를 사용하는 v1 baseline config. |
-| `experiments/umaxformer_v2/` | ORAS5-only validation을 사용하는 v2 active config와 후속 실험 config. |
-| `ensembles/` | Ensemble figure/evaluation helper config. |
-| `archive/umaxformer_v1_legacy_oras5/` | v2로 승격하기 전의 seed-42 v1 ORAS5-only 실험 기록. Active discovery 대상은 아님. |
+| [experiment_overview.md](experiment_overview.md) | Config와 `outputs/` 상태에서 자동 생성되는 전체 실험 요약, status, ranking, genealogy. |
+| [umaxformer_v1_family.md](umaxformer_v1_family.md) | SODA+ORAS5 validation pair를 사용하는 UmaxFormer V1 baseline 기준. |
+| [umaxformer_v2_family.md](umaxformer_v2_family.md) | ORAS5-only validation을 사용하는 UmaxFormer V2 active line. |
+| [model_design_order_sheet.md](model_design_order_sheet.md) | V1 baseline 재훈련과 V2 이후 실험 설계 순서. |
 
-새 실험을 추가할 때는 가장 가까운 기존 config를 복사하고, `experiment_name`, `output_dir`, data cache namespace, model/training 설정을 함께 갱신합니다.
+## Regenerate Overview
 
-경로 필드는 `data/input/...`, `data/target/...`, `data/cache/...`, `outputs/...` 형식을 권장합니다. 런타임은 상대경로를 프로젝트 루트 기준으로 해석하고, 절대경로가 들어오면 그대로 사용합니다.
+`experiment_overview.md`는 아래 명령으로 갱신합니다.
 
-Cache namespace는 validation/data line을 드러내도록 관리합니다. `10vars`는 SODA+ORAS5 baseline cache, `10vars_oras5`는 ORAS5-only 10-variable cache, `9vars_oras5_*`는 ORAS5-only variable ablation cache에 사용합니다.
-
-현재 active training order는 `umaxformer_v1`을 먼저 재훈련한 뒤 `umaxformer_v2`를 재훈련하는 순서입니다.
+```bash
+cd /home/sanggyu1008/project/UmaxFormer
+python tools/docs/generate_experiment_overview.py
+```
