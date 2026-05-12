@@ -1,0 +1,14 @@
+experiment_name: umaxformer_v1
+run_name: umaxformer_v1
+
+model:
+  name: umaxformer_v1
+
+data:
+  cache_namespace: 10vars
+  validation:
+    - name: validation_soda_20crv2_1871_1978
+    - name: validation_oras5_era5_1958_1978
+
+output:
+  run_dir: outputs/experiments/umaxformer_v1/umaxformer_v1

@@ -1,0 +1,13 @@
+experiment_name: umaxformer_v2
+run_name: umaxformer_v2
+
+model:
+  name: umaxformer_v2
+
+data:
+  cache_namespace: 10vars_oras5
+  validation:
+    - name: validation_oras5_era5_1958_1978
+
+output:
+  run_dir: outputs/experiments/umaxformer_v2/umaxformer_v2
